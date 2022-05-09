@@ -1,6 +1,7 @@
 import argparse
 import glob
 import os
+import time
 
 import cv2
 import mmcv
@@ -85,6 +86,8 @@ def main():
         cuda_flag = True
 
     for i in range(0, len(input_paths), args.max_seq_len):
+        start_time = time.time()
+
         inputs = []
         outputs = []
 
@@ -114,6 +117,14 @@ def main():
                 file_extension = os.path.splitext(filename)[1]
                 filename = filename.replace(file_extension, ".png")
             mmcv.imwrite(output, f"{args.output_dir}/{filename}")
+
+        # Logging
+        if i == 0:
+            print("Inferring using RealBasicVSR:")
+
+        percentage_complete = round((i + outputs.size(1)) / len(input_paths) * 100)
+        frames_per_second = round(outputs.size(1) / (time.time() - start_time), 2)
+        print(f"... {percentage_complete}%\t\t{frames_per_second} fps")
 
 
 if __name__ == "__main__":
